@@ -81,10 +81,11 @@ def rim_extractor(src_img, color):
 def region_of_interest(img, box):
     x0, y0 = box[1]
     x1, y1 = box[3]
-    x0 = int(round(x0))
-    x1 = int(round(x1))
-    y0 = int(round(y0))
-    y1 = int(round(y1))
+    # The following number should be in range:
+    x0 = max(int(round(x0)), 0)
+    x1 = min(int(round(x1)), img.shape[1])
+    y0 = max(int(round(y0)), 0)
+    y1 = min(int(round(y1)), img.shape[0])
     roi = np.copy(img[y0:y1, x0:x1])
     return roi
 

@@ -1,13 +1,13 @@
-import cv2
-import caffe
+import cv2, caffe, os
 import numpy as np
 from scipy.misc import imresize
 
 image_h = 28
 image_w = 28
 
-model_def = 'lenet_train_test_deploy.prototxt'
-model_weights = 'weights/lenet.caffemodel'
+file_dir = os.path.dirname(os.path.abspath(__file__))
+model_def = file_dir + '/lenet_train_test_deploy.prototxt'
+model_weights = file_dir + '/weights/lenet.caffemodel'
 
 class HandwrittenDigitClassifier:
     def __init__(self, mode = 'GPU'):
@@ -20,7 +20,8 @@ class HandwrittenDigitClassifier:
         self.transformer = caffe.io.Transformer({'data': self.net.blobs['data'].data.shape})
 
     def predict(self, img):
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        if len(img.shape) == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = img.astype(np.float32) / 255.0
         img = imresize(img, [image_h, image_w])
         self.net.blobs['data'].data[...] = self.transformer.preprocess('data', img)

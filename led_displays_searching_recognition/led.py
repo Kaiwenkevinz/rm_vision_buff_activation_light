@@ -71,6 +71,8 @@ class LedDisplaysRecognizer:
         img = cv2.blur(img, (60, 60))
         img = threshold(img, 2)
         keypoints = self.detector.detect(img)
+        if len(keypoints) == 0:
+            return img
         keypoints = sorted(keypoints, key = lambda x: x.size, reverse = True)
         # choice_pt = [keypoints[0]]
         # im_with_keypoints = cv2.drawKeypoints(img, choice_pt, np.array([]), (0, 0, 255),
