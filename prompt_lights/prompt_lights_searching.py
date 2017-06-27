@@ -2,16 +2,17 @@ import cv2, sys, os, rospy, math
 import numpy as np
 from scipy.misc import imresize
 
-root = os.path.dirname(os.path.abspath(__file__))
-root = root+'/..'#'/number_searching'
+file_dir = None
+is_debug_mode = True
+
+file_dir = os.path.dirname(os.path.abspath(__file__))
+root = file_dir+'/..'#'/number_searching'
 sys.path.insert(0, root)
 # print(root)
-print(os.path.dirname(root))
+# print(os.path.dirname(root))
 from number_searching.grid_recognition import read_image_from_file,preprocessing_for_number_searching,filter_redundancy_boxes
 from number_searching.preprocess_for_number_recognition import draw_box, region_of_interest
 
-file_dir = None
-is_debug_mode = True
 
 draw_prompt_lights_box_color = (255,255,255)
 
@@ -221,6 +222,24 @@ def preprocess_for_prompt_light_identify(src_img, rects, number_boxes):
 
 
 """
+This function identify the prompt light status
+"""
+def prompt_light_identify(color):
+    b_channel = int(color[0])
+    g_channel = int(color[1])
+    r_channel = int(color[2])
+    is_on = False
+
+    # print(abs(r_channel - g_channel), abs(r_channel - b_channel))
+    dist = (abs(r_channel - g_channel))**2 + (abs(r_channel - b_channel))**2
+    if dist > 800:
+        is_on = True
+
+    return is_on
+
+
+
+"""
 Major process of prompt lights searching
 """
 def prompt_lights_searching(src_img):
@@ -250,13 +269,19 @@ def prompt_lights_searching(src_img):
 
     if len(rects) == 5:
         for i in range(len(rects)):
-            draw_box(src_img, number_boxes[i], (0,255,0)) # draw the rim
-            cv2.putText(src_img, str(number_boxes_regions_list[i][(12,25)]), (int(rects[i][0][0]),int(rects[i][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+
+            identify_info = number_boxes_regions_list[i][(12,25)]
+            label_color = (0,255,0)
+            if prompt_light_identify(identify_info):
+                label_color = (0,0,255)
+
+            draw_box(src_img, number_boxes[i], label_color) # draw the rim
+            cv2.putText(src_img, str(identify_info), (int(rects[i][0][0]),int(rects[i][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 1, label_color, 2)
             # print(src_img[rects[i][0]])
     # print("+++++++++++++")
 
-    for i in range(len(contours)):
-        cv2.drawContours(src_img, contours, i, (255,0,0),3)
+    # for i in range(len(contours)):
+    #     cv2.drawContours(src_img, contours, i, (255,0,0),3)
         # cv2.fillPoly(src_img, list(contours[i]), (0,255,0))
 
         # cv2.imshow("kankan", src_img)
@@ -292,7 +317,7 @@ if __name__ == "__main__":
     """ ================ Testing with video files (START) ================ """
     # """
     # cam = cv2.VideoCapture('./../Buff2017.mp4')
-    cam = cv2.VideoCapture('./../../buff_test_video_01.mpeg')
+    cam = cv2.VideoCapture(file_dir+'/../../buff_test_video_01.mpeg')
 
     # Define the codec and create VideoWriter object
     # fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -313,8 +338,8 @@ if __name__ == "__main__":
         src_img, number_boxes_regions_list = prompt_lights_searching(frame)
 
         cv2.imshow('src_img', src_img)
-        for i in range(len(number_boxes_regions_list)):
-            cv2.imshow(str(i),number_boxes_regions_list[i])
+        # for i in range(len(number_boxes_regions_list)):
+        #     cv2.imshow(str(i),number_boxes_regions_list[i])
 
         key = cv2.waitKey(1000/frame_rate) & 0xff
         # key = cv2.waitKey(0) & 0xff
