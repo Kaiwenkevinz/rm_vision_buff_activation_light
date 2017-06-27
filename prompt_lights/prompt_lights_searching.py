@@ -276,18 +276,7 @@ def prompt_lights_searching(src_img):
                 label_color = (0,0,255)
 
             draw_box(src_img, number_boxes[i], label_color) # draw the rim
-            cv2.putText(src_img, str(identify_info), (int(rects[i][0][0]),int(rects[i][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 1, label_color, 2)
-            # print(src_img[rects[i][0]])
-    # print("+++++++++++++")
-
-    # for i in range(len(contours)):
-    #     cv2.drawContours(src_img, contours, i, (255,0,0),3)
-        # cv2.fillPoly(src_img, list(contours[i]), (0,255,0))
-
-        # cv2.imshow("kankan", src_img)
-        # key = cv2.waitKey(0) & 0xff
-        # if key == ord('q'):
-        #     break
+            # cv2.putText(src_img, str(identify_info), (int(rects[i][0][0]),int(rects[i][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 1, label_color, 2)
 
     return src_img, number_boxes_regions_list
 
