@@ -101,6 +101,9 @@ This function first classify points into groups by x distance.
 Then, pick up the larget group.
 """
 def prompt_light_filter_outlier_boxes_by_x_dist(contours, rects, number_boxes):
+    if (len(rects)==0): # avoid empty input
+        return [],[],[],[]
+
     dist_list = [[rects[i]] for i in range(len(rects))]
     boxes_list = [[number_boxes[i]] for i in range(len(rects))]
     contours_list = [[contours[i]] for i in range(len(rects))]
@@ -134,7 +137,6 @@ def prompt_light_filter_outlier_boxes_by_x_dist(contours, rects, number_boxes):
 
     # largest bin (group) size
     max_bin_size = max(dist_len_list)
-
     good_list_index = dist_len_list.index(max(dist_len_list))
 
     bad_box_indexs = list()
@@ -306,7 +308,8 @@ if __name__ == "__main__":
     """ ================ Testing with video files (START) ================ """
     # """
     # cam = cv2.VideoCapture('./../Buff2017.mp4')
-    cam = cv2.VideoCapture(file_dir+'/../../buff_test_video_01.mpeg')
+    # cam = cv2.VideoCapture(file_dir+'/../../buff_test_video_01.mpeg')
+    cam = cv2.VideoCapture(1)
 
     # Define the codec and create VideoWriter object
     # fourcc = cv2.VideoWriter_fourcc(*'XVID')
