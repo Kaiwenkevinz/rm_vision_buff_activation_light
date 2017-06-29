@@ -1,26 +1,29 @@
+# Handwritten Digit Recognition
 
-# rm_vision_buff_activation
+This is a handwritten digit classifier using Convolutional Neural Net
+implemented in Caffe.
 
-## number identification with CNN done
-cnn_training.py
+We trained two layered conv net on MNIST dataset with data
+augmentation to prevent overfitting, the original dataset has been randomly
+translated, rotated, added black edges and random noise, so that the training
+data is more close to what a camera can see in reality.
 
-requirement:
-tensorflow
-numpy
+## Usage
 
-description:
-It builts a convolutional neurtal network with 2 convolutional layers and 2 fully connected layers.
-Then it trains CNN with 2000 steps. More training is allowed as it does not show overfitting. But that might be unnecessary because the structure is pretty simple.
+We have already include the weights file so you don't have to train from the
+scratch, but you can do that by running:
+```
+./init.sh
+./train-lenet.sh
+```
 
-number_detection.py
-
-requirment:
-tensorflow
-numpy
-glob
-cv2
-
-description:
-It will use the model created above to identify numbers from pictures in *test_images*.
-Save pictures (.png) to test_images folder and all of them will be identified. If .jpg images are used, just change *.png to .jpg. The `process_image()` crops the boundry by 10 pixels to prevent any black boundries being passed to model.
-
+The classifier has been written into a module, you can import it by doing the
+following in you python code:
+```Python
+import numpy as np
+from classifier import HandwrittenDigitClassifier
+handwritten_digit_classifier = HandwrittenDigitClassifier()
+img = # something
+prob = handwritten_digit_classifier.predict(img)
+prediction = np.argmax(prob)
+```
