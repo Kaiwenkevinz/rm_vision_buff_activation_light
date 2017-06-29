@@ -6,6 +6,7 @@ This is the buff activation system developed by University of Alberta DJI Roboma
 	- Chenrui Lei
 	- Wenzhang Qian
 	- Yancheng Ou
+    - Siqi Yan
 
 
 
