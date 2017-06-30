@@ -13,20 +13,20 @@ data is more close to what a camera can see in reality.
 In order to use this module, you should have Caffe compiled correctly.
 
 And the following environment variables should to be set:
-'''
+```Bash
 export CAFFE_ROOT="Your directory to Caffe"
 export PYTHONPATH="$CAFFE_ROOT/distribute/python:$PYTHONPATH"
 export LD_LIBRARY_PATH="$CAFFE_ROOT/distribute/lib:$LD_LIBRARY_PATH"
 export PATH="$CAFFE_ROOT/distribute/bin:$PATH"
-'''
+```
 
 Also you need to install the required packages according to
 $CAFFE_ROOT/python/requirements.txt
 
 You can do that by running:
-'''
+```Bash
 sudo pip install -r $CAFFE_ROOT/python/requirements.txt
-'''
+```
 
 
 ## Usage
