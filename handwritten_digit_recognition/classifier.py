@@ -17,7 +17,7 @@ class HandwrittenDigitClassifier:
         else:
             caffe.set_mode_cpu()
         self.net = caffe.Net(model_def, model_weights, caffe.TEST)
-        self.transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+        self.transformer = caffe.io.Transformer({'data': self.net.blobs['data'].data.shape})
 
     def predict(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
