@@ -1,4 +1,4 @@
-import cv2
+import cv2, os
 import numpy as np
 from scipy.misc import imresize
 
@@ -25,13 +25,14 @@ def find_repeat(lst):
 
 class LedDisplaysRecognizer:
     def __init__(self):
+        self.file_dir = os.path.dirname(os.path.abspath(__file__))
         self.load_templates()
         self.is_debug = True
 
     def load_templates(self):
         self.templates = {}
         for i in range(1, 10):
-            img = cv2.imread('templates/%d.png'%(i), 0)
+            img = cv2.imread(self.file_dir+'/templates/%d.png'%(i), 0)
             self.templates[i] = img
 
     def resize_templates(self, out_h):
@@ -64,14 +65,14 @@ class LedDisplaysRecognizer:
             return None
         x = int(M['m10'] / M['m00'])
         y = int(M['m01'] / M['m00'])
-        
+
         # Compute the range
         y_loc, x_loc = np.where(segment != 0)
         x0 = x_loc.min()
         y0 = y_loc.min()
         x1 = x_loc.max()
         y1 = y_loc.max()
-        
+
         # Compute the area for all digits
         width_all = x1 - x0
         height_all = y1 - y0
