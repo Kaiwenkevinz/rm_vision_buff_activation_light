@@ -27,6 +27,7 @@ class LedDisplaysRecognizer:
     def __init__(self):
         self.file_dir = os.path.dirname(os.path.abspath(__file__))
         self.load_templates()
+        self.init_blob_detector()
         self.is_debug = True
 
     def load_templates(self):
@@ -34,6 +35,27 @@ class LedDisplaysRecognizer:
         for i in range(1, 10):
             img = cv2.imread(self.file_dir+'/templates/%d.png'%(i), 0)
             self.templates[i] = img
+
+    def init_blob_detector(self):
+        params = cv2.SimpleBlobDetector_Params()
+
+        params.minThreshold = 0
+        params.maxThreshold = 255
+
+        params.filterByArea = False
+        params.minArea = 1500
+
+        params.filterByCircularity = False
+        params.minCircularity = 0.1
+
+        params.filterByConvexity = False
+        params.minConvexity = 0.87
+
+        params.filterByInertia = False
+        params.minInertiaRatio = 0.01
+
+        params.filterByColor = False
+        self.detector = cv2.SimpleBlobDetector_create(params)
 
     def resize_templates(self, out_h):
         templates = {}
@@ -43,6 +65,30 @@ class LedDisplaysRecognizer:
             out_w = int(round(out_w))
             templates[i] = imresize(img, [out_h, out_w])
         return templates
+
+    def detect_blobs(self, img):
+        ori = img.copy()
+        img = cv2.blur(img, (60, 60))
+        img = threshold(img, 2)
+        keypoints = self.detector.detect(img)
+        keypoints = sorted(keypoints, key = lambda x: x.size, reverse = True)
+        # choice_pt = [keypoints[0]]
+        # im_with_keypoints = cv2.drawKeypoints(img, choice_pt, np.array([]), (0, 0, 255),
+                # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # cv2.imshow('Keypoints', im_with_keypoints)
+        center_x, center_y = keypoints[0].pt
+        r = keypoints[0].size
+        center_x = int(round(center_x))
+        center_y = int(round(center_y))
+        r2 = int(round(r / 2.0))
+        x0 = max(center_x - r2, 0)
+        x1 = min(center_x + r2, img.shape[1])
+        y0 = max(center_y - r2, 0)
+        y1 = min(center_y + r2, img.shape[0])
+        mask = np.zeros_like(ori)
+        mask[y0:y1, x0:x1] = 255
+        ori = ori & mask
+        return ori
 
     def process(self, img):
         # Select the digit tube pixels from the image
@@ -58,6 +104,7 @@ class LedDisplaysRecognizer:
         segment = threshold(segment, 2)
         segment = segment & mass
 
+        segment = self.detect_blobs(segment)
         if self.is_debug:
             cv2.imshow('Debug: segment', segment)
 
