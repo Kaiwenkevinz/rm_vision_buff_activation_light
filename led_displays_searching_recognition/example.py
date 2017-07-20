@@ -2,7 +2,7 @@ import cv2
 from led import LedDisplaysRecognizer
 
 if __name__ == '__main__':
-    cam = cv2.VideoCapture('../buff_test_video_00.mpeg')
+    cam = cv2.VideoCapture('../../buff_test_video_00.mpeg')
     led_displays_recognizer = LedDisplaysRecognizer()
 
     while True:

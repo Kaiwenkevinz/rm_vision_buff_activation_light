@@ -36,11 +36,13 @@ class LedDisplaysRecognizer:
             self.templates[i] = img
 
     def resize_templates(self, out_h):
+        templates = {}
         for i, img in self.templates.items():
             h, w = img.shape
             out_w = w * (out_h / float(h))
             out_w = int(round(out_w))
-            self.templates[i] = imresize(img, [out_h, out_w])
+            templates[i] = imresize(img, [out_h, out_w])
+        return templates
 
     def process(self, img):
         # Select the digit tube pixels from the image
@@ -90,7 +92,7 @@ class LedDisplaysRecognizer:
 
         # Prepare for template matching
         width_each = int(round(width_all / 5.0))
-        self.resize_templates(height_all)
+        templates = self.resize_templates(height_all)
         offset = 10
         x0 = max(x0 - offset, 0)
         y0 = max(y0 - offset, 0)
@@ -101,7 +103,7 @@ class LedDisplaysRecognizer:
         scores = []
 
         # Apply template matching
-        for num, template in self.templates.items():
+        for num, template in templates.items():
             if segment.shape[0] < template.shape[0] or segment.shape[1] < template.shape[1]:
                 return None
             res = cv2.matchTemplate(segment, template, cv2.TM_CCOEFF_NORMED)
