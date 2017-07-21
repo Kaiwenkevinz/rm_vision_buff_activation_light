@@ -10,26 +10,23 @@ import numpy as np
 from scipy.misc import imresize
 
 if __name__ == '__main__':
-    cam = cv2.VideoCapture(0)
-    # cam = cv2.VideoCapture('../../buff_test_video_00.mpeg')
+    # cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture('../test1.mpeg')
     led_displays_recognizer = LedDisplaysRecognizer()
     handwritten_digit_classifier = HandwrittenDigitClassifier()
     while True:
         ret, frame = cam.read()
         # frame = imresize(frame, [540, 816])
         assert ret == True
-        frame_ori = frame.copy()
 
         h, w, _ = frame.shape
         h2 = h / 2
         w2 = w / 2
-        rh = int(round(h * 0.2))
-        rw = int(round(w * 0.2))
+        frame_ori = frame.copy()
+
         result = led_displays_recognizer.process(frame)
         if result != None:
             digits, x0, x1, y0, y1 = result
-            x0 += rw
-            y0 += rh
             cv2.putText(frame, digits, (x0, y0), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (128, 255, 0))
         else:
             cv2.putText(frame, 'Not Found', (100, 100), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (128, 255, 0))
