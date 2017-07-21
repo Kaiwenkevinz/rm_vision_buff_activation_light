@@ -5,6 +5,7 @@ sys.path.insert(0, root)
 from led_displays_searching_recognition.led import LedDisplaysRecognizer
 from handwritten_digit_recognition.classifier import HandwrittenDigitClassifier
 from number_searching.grid_recognition import number_search
+from controller.communication import Communication
 import cv2
 import numpy as np
 from scipy.misc import imresize
@@ -14,6 +15,7 @@ if __name__ == '__main__':
     # cam = cv2.VideoCapture('../../buff_test_video_00.mpeg')
     led_displays_recognizer = LedDisplaysRecognizer()
     handwritten_digit_classifier = HandwrittenDigitClassifier()
+    communication = Communication()
     while True:
         ret, frame = cam.read()
         # frame = imresize(frame, [540, 816])
