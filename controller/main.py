@@ -30,6 +30,7 @@ class MainController:
 
     def run(self):
         # The main code goes here:
+        self.communication.send([0xfe])
         self.communication.send([128, 129])
 
 if __name__ == '__main__':
