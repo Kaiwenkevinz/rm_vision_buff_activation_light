@@ -1,5 +1,11 @@
 import serial
 
+# These are predefined values for the communication protocol:
+MSG_START = 0xff
+MSG_STOP = 0xfe
+MSG_CONFIRM = 0xff
+MSG_AXIS = 0xfe
+
 class Communication:
     def __init__(self, port = '/dev/ttyTHS2', bitrate = 115200):
         self.ser = serial.Serial(port, bitrate, timeout = 0)
@@ -13,16 +19,7 @@ class Communication:
         if len(msg) != 1:
             return None
         else:
-            print hex(ord(msg))
-            return msg
-
-    def start_received(self):
-        msg = self.receive()
-        return msg != None and ord(msg) == 0xff
-
-    def stop_received(self):
-        msg = self.receive()
-        return msg != None and ord(msg) == 0xfe
+            return ord(msg)
 
     def close(self):
         self.ser.close()
@@ -33,19 +30,3 @@ class Communication:
         """
         assert val >= -128 and val <= 127
         self.send([val + 128])
-
-if __name__ == '__main__':
-    communication = Communication()
-
-    while True:
-        msg = communication.receive()
-        if msg is not None and ord(msg) == 0xff:
-            communication.send([0xff])
-            communication.send([128])
-            communication.send([128])
-        
-        msg = communication.receive()
-        if msg is not None:
-            print msg
-    
-    communication.close()
