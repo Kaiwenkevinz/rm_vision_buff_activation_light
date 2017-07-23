@@ -13,6 +13,7 @@ class Communication:
         if len(msg) != 1:
             return None
         else:
+            print hex(ord(msg))
             return msg
 
     def start_received(self):
@@ -23,11 +24,15 @@ class Communication:
         msg = self.receive()
         return msg != None and ord(msg) == 0xfe
 
-    def start_confirm(self):
-        self.send([0xff])
-
     def close(self):
         self.ser.close()
+
+    def send_axis(self, val):
+        """
+        val: [-128, 127],  which is encoded as [0, 255]
+        """
+        assert val >= -128 and val <= 127
+        self.send([val + 128])
 
 if __name__ == '__main__':
     communication = Communication()

@@ -9,6 +9,7 @@ from controller.communication import Communication
 import cv2
 import numpy as np
 from scipy.misc import imresize
+import time
 
 class MainController:
     def __init__(self):
@@ -16,22 +17,28 @@ class MainController:
         self.cam = cv2.VideoCapture(0)
         self.led_displays_recognizer = LedDisplaysRecognizer()
         self.handwritten_digit_classifier = HandwrittenDigitClassifier()
+        self.debug_message('init done')
         self.loop()
 
     def loop(self):
         # Control start/stop of the main program
         while True:
             if self.communication.start_received():
-                self.communication.start_confirm()
+                self.communication.send([0xff]) # confirmation respond
                 while True:
                     self.run()
                     if self.communication.stop_received():
+                        # Suspend the program
                         break
+
+    def debug_message(self, msg):
+        print '[main controller]: ' + msg
 
     def run(self):
         # The main code goes here:
-        self.communication.send([0xfe])
-        self.communication.send([128, 129])
+        self.communication.send([0xfe]) # flag of X Y
+        self.communication.send_axis(-50)
+        self.communication.send_axis(-50)
 
 if __name__ == '__main__':
     main_controller = MainController()
