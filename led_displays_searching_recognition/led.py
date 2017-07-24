@@ -74,23 +74,36 @@ class LedDisplaysRecognizer:
         if len(keypoints) == 0:
             return img
         keypoints = sorted(keypoints, key = lambda x: x.size, reverse = True)
-        # choice_pt = [keypoints[0]]
-        # im_with_keypoints = cv2.drawKeypoints(img, choice_pt, np.array([]), (0, 0, 255),
-                # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        # cv2.imshow('Keypoints', im_with_keypoints)
-        center_x, center_y = keypoints[0].pt
-        r = keypoints[0].size
-        center_x = int(round(center_x))
-        center_y = int(round(center_y))
-        r2 = int(round(r / 2.0))
-        x0 = max(center_x - r2, 0)
-        x1 = min(center_x + r2, img.shape[1])
-        y0 = max(center_y - r2, 0)
-        y1 = min(center_y + r2, img.shape[0])
-        mask = np.zeros_like(ori)
-        mask[y0:y1, x0:x1] = 255
-        ori = ori & mask
-        return ori
+
+        while True:
+            center_x, center_y = keypoints[0].pt
+            r = keypoints[0].size
+            center_x = int(round(center_x))
+            center_y = int(round(center_y))
+            r2 = int(round(r / 2.0))
+            x0 = max(center_x - r2, 0)
+            x1 = min(center_x + r2, img.shape[1])
+            y0 = max(center_y - r2, 0)
+            y1 = min(center_y + r2, img.shape[0])
+            mask = np.zeros_like(ori)
+            mask[y0:y1, x0:x1] = 255
+            segment = ori & mask
+            y_loc, x_loc = np.where(segment != 0)
+            segment_width = x_loc.max() - x_loc.min()
+            segment_height = y_loc.max() - y_loc.min()
+            if segment_width / segment_height > 2.0:
+                selected_pt = [keypoints[0]]
+                im_with_keypoints = cv2.drawKeypoints(img, selected_pt, np.array([]), (0, 0, 255),
+                        cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                digit_only = segment
+                break
+            keypoints.pop(0)
+            if len(keypoints) == 0:
+                cv2.imshow('Keypoints', im_with_keypoints)
+                return ori
+        cv2.imshow('Keypoints', im_with_keypoints)
+
+        return digit_only
 
     def process(self, img):
         # Select the digit tube pixels from the image
@@ -119,6 +132,8 @@ class LedDisplaysRecognizer:
 
         # Compute the range
         y_loc, x_loc = np.where(segment != 0)
+        if len(x_loc) == 0 or len(y_loc) == 0:
+            return None
         x0 = x_loc.min()
         y0 = y_loc.min()
         x1 = x_loc.max()
