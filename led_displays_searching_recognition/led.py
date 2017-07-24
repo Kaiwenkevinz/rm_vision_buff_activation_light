@@ -66,44 +66,59 @@ class LedDisplaysRecognizer:
             templates[i] = imresize(img, [out_h, out_w])
         return templates
 
-    def detect_blobs(self, img):
-        ori = img.copy()
-        img = cv2.blur(img, (60, 60))
-        img = threshold(img, 2)
-        keypoints = self.detector.detect(img)
-        if len(keypoints) == 0:
-            return img
-        keypoints = sorted(keypoints, key = lambda x: x.size, reverse = True)
+    def filter_blobs(self, img):
+        """
+        Remove all non interesting regions, and keep only one cluster which is the
+        most promising region of interest. The idea is:
 
-        while True:
-            center_x, center_y = keypoints[0].pt
-            r = keypoints[0].size
-            center_x = int(round(center_x))
-            center_y = int(round(center_y))
-            r2 = int(round(r / 2.0))
-            x0 = max(center_x - r2, 0)
-            x1 = min(center_x + r2, img.shape[1])
-            y0 = max(center_y - r2, 0)
-            y1 = min(center_y + r2, img.shape[0])
-            mask = np.zeros_like(ori)
-            mask[y0:y1, x0:x1] = 255
-            segment = ori & mask
-            y_loc, x_loc = np.where(segment != 0)
-            segment_width = x_loc.max() - x_loc.min()
-            segment_height = y_loc.max() - y_loc.min()
-            if segment_width / segment_height > 2.0:
-                selected_pt = [keypoints[0]]
-                im_with_keypoints = cv2.drawKeypoints(img, selected_pt, np.array([]), (0, 0, 255),
-                        cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-                digit_only = segment
-                break
-            keypoints.pop(0)
-            if len(keypoints) == 0:
-                cv2.imshow('Keypoints', im_with_keypoints)
-                return ori
-        cv2.imshow('Keypoints', im_with_keypoints)
+        Using opencv blob detection to cluster the image, after that, we can
+        identify which cluster is more likely to be the region of interest.
+        Specifically, here we think the LED digit cluster is the largest cluster
+        whose height is way smaller than the width.
 
-        return digit_only
+        The idea is inspired by @AlexQian97
+        """
+        filtered_img = img
+        debug_img = img.copy()
+        img_blured = cv2.blur(img, (60, 60))
+        img_blured = threshold(img_blured, 2)
+        keypoints = self.detector.detect(img_blured)
+        if len(keypoints) != 0:
+            keypoints = sorted(keypoints, key = lambda x: x.size, reverse = True)
+
+            # Select a largest blob whose height is way smaller than the height:
+            while len(keypoints) > 0:
+
+                # Calculate the height and width:
+                center_x, center_y = keypoints[0].pt
+                r = keypoints[0].size
+                center_x = int(round(center_x))
+                center_y = int(round(center_y))
+                r2 = int(round(r / 2.0))
+                x0 = max(center_x - r2, 0)
+                x1 = min(center_x + r2, img.shape[1])
+                y0 = max(center_y - r2, 0)
+                y1 = min(center_y + r2, img.shape[0])
+                mask = np.zeros_like(img)
+                mask[y0:y1, x0:x1] = 255
+                segment = img & mask # segment the image
+                y_loc, x_loc = np.where(segment != 0)
+                segment_width = x_loc.max() - x_loc.min()
+                segment_height = y_loc.max() - y_loc.min()
+
+                if segment_width / segment_height > 2.0:
+                    filtered_img = segment
+                    if self.is_debug:
+                        selected_pt = [keypoints[0]]
+                        debug_img = cv2.drawKeypoints(img, selected_pt, np.array([]), (0, 0, 255),
+                                cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                    break
+                keypoints.pop(0)
+
+        if self.is_debug:
+            cv2.imshow('Selected Cluster', debug_img)
+
+        return filtered_img
 
     def process(self, img):
         # Select the digit tube pixels from the image
@@ -118,10 +133,7 @@ class LedDisplaysRecognizer:
         mass = threshold(mass, 2)
         segment = threshold(segment, 2)
         segment = segment & mass
-
-        segment = self.detect_blobs(segment)
-        if self.is_debug:
-            cv2.imshow('Debug: segment', segment)
+        segment = self.filter_blobs(segment)
 
         # Compute the center
         M = cv2.moments(segment)
