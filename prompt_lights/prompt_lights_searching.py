@@ -269,6 +269,8 @@ def prompt_lights_searching(src_img):
     #Extract info for prompt lights identify
     number_boxes_regions_list = preprocess_for_prompt_light_identify(src_img, rects, number_boxes)
 
+    #Identify prompt lights and get statistic info
+    hitting_num = 0
     if len(rects) == 5:
         for i in range(len(rects)):
 
@@ -276,11 +278,12 @@ def prompt_lights_searching(src_img):
             label_color = (0,255,0)
             if prompt_light_identify(identify_info):
                 label_color = (0,0,255)
+                hitting_num += 1
 
             draw_box(src_img, number_boxes[i], label_color) # draw the rim
             # cv2.putText(src_img, str(identify_info), (int(rects[i][0][0]),int(rects[i][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 1, label_color, 2)
 
-    return src_img, number_boxes_regions_list
+    return src_img, hitting_num
 
 
 
@@ -308,8 +311,8 @@ if __name__ == "__main__":
     """ ================ Testing with video files (START) ================ """
     # """
     # cam = cv2.VideoCapture('./../Buff2017.mp4')
-    # cam = cv2.VideoCapture(file_dir+'/../../buff_test_video_01.mpeg')
-    cam = cv2.VideoCapture(1)
+    cam = cv2.VideoCapture(file_dir+'/../../buff_test_video_01.mpeg')
+    # cam = cv2.VideoCapture(1)
 
     # Define the codec and create VideoWriter object
     # fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -327,9 +330,11 @@ if __name__ == "__main__":
         assert ret == True
 
         # src_img, number_boxes_regions_list, _ = number_search(frame)
-        src_img, number_boxes_regions_list = prompt_lights_searching(frame)
+        src_img, hitting_num = prompt_lights_searching(frame)
 
-        cv2.imshow('src_img', src_img)
+        if is_debug_mode:
+            cv2.imshow('src_img', src_img)
+            print(hitting_num)
         # for i in range(len(number_boxes_regions_list)):
         #     cv2.imshow(str(i),number_boxes_regions_list[i])
 
