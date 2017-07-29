@@ -103,6 +103,8 @@ class LedDisplaysRecognizer:
                 mask[y0:y1, x0:x1] = 255
                 segment = img & mask # segment the image
                 y_loc, x_loc = np.where(segment != 0)
+                if len(y_loc) == 0 or len(x_loc) == 0:
+                    break
                 segment_width = x_loc.max() - x_loc.min()
                 segment_height = y_loc.max() - y_loc.min()
 
@@ -125,14 +127,20 @@ class LedDisplaysRecognizer:
         red_mask = cv2.inRange(img, np.array([0, 0, 200]), np.array([255, 255, 255]))
         black_mask = cv2.inRange(img, np.array([0, 0, 0]), np.array([30, 255, 255]))
         black_mask = cv2.blur(black_mask, (10, 10))
-        raw_segment = red_mask & black_mask
-        segment = raw_segment.copy()
+        segment = red_mask & black_mask
+        segment_bkp = segment.copy()
+
+        # Plan B:
+        red_mask_extra = cv2.inRange(img, np.array([0, 0, 150]), np.array([90, 90, 255]))
+        red_mask_extra = cv2.blur(red_mask_extra, (20, 20))
+        red_mask_extra = threshold(red_mask_extra, 1)
 
         # Remove small regions that are not likely be our target
         mass = cv2.blur(segment, (70, 70))
         mass = threshold(mass, 2)
         segment = threshold(segment, 2)
         segment = segment & mass
+        segment = segment & red_mask_extra
         segment = self.filter_blobs(segment)
 
         # Compute the center
@@ -141,6 +149,7 @@ class LedDisplaysRecognizer:
             return None
         x = int(M['m10'] / M['m00'])
         y = int(M['m01'] / M['m00'])
+
 
         # Compute the range
         y_loc, x_loc = np.where(segment != 0)
@@ -162,8 +171,10 @@ class LedDisplaysRecognizer:
         # If the area we got is too large, then there are possibly light
         # interferences, so we report not found. This is not a perfect
         # solution.
-        h, w = raw_segment.shape
-        if width_all > w*0.2 or height_all > h*0.2:
+        # print height_all, width_all
+        h, w = segment_bkp.shape
+        # print w * 0.4, h * 0.4
+        if width_all > w*0.4 or height_all > h*0.4:
             return None
 
         # Prepare for template matching
@@ -174,7 +185,8 @@ class LedDisplaysRecognizer:
         y0 = max(y0 - offset, 0)
         x1 = min(x1 + offset, w)
         y1 = min(y1 + offset, h)
-        segment = raw_segment[y0:y1, x0:x1]
+        # segment = segment_bkp[y0:y1, x0:x1]
+        segment = segment[y0:y1, x0:x1]
         segment = 255 - segment
         scores = []
 
@@ -203,6 +215,7 @@ class LedDisplaysRecognizer:
                 pts[j] = ch, h, w + bound
                 assert scores[pts[j]] == verify
             candidate.append(pts)
+
 
         # Check repeated digits, if found then we only take the one with
         # higher score value

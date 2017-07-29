@@ -38,6 +38,7 @@ class RuneRecognition:
         """
         ret, frame = self.cam.read()
         assert ret == True
+        # frame = cv2.imread('rune03.png')
 
         frame_backup = frame.copy()
         frame_show = frame.copy()
@@ -99,6 +100,7 @@ class RuneRecognition:
                 cv2.imshow('Rune Recognition', frame_show)
             return None
 
+
         # Find the target based on informations collected above:
         target_err = None
         if led_info != None:
@@ -129,8 +131,8 @@ class RuneRecognition:
         cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    rune_recognition = RuneRecognition(show_image = True, crop = [0.4, 0.4])
-    # rune_recognition = RuneRecognition(show_image = True)
+    # rune_recognition = RuneRecognition(show_image = True, crop = [0.4, 0.4])
+    rune_recognition = RuneRecognition(show_image = True)
     while True:
         rune_recognition.process()
         if cv2.waitKey(1000/24) & 0xFF == ord('q'):
