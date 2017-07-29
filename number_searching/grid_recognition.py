@@ -51,8 +51,8 @@ Analysis and filter contours
 """
 def analysis_and_filter_contours_for_number_searching(contours):
     ratio = 28.0 / 16.0
-    sudokuWidth = 127
-    sudokuHeight = 71
+    sudokuWidth = 66#127
+    sudokuHeight = 38#71
     angleTolerance = 6
     ratioToleranceRate = 0.2
     dimensionsToleranceRate = 0.4

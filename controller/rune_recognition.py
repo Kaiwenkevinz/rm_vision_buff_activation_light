@@ -15,13 +15,15 @@ class RuneRecognition:
         """
         Apply all recognition algorithms in this module.
         """
-        # self.cam = cv2.VideoCapture(0)
-        self.cam = cv2.VideoCapture('../test1.mpeg')
+        # self.cam = cv2.VideoCapture(1)
+        self.cam = cv2.VideoCapture(file_dir + '/../../../real_test_00.avi')
+        # self.cam = cv2.VideoCapture(file_dir + '/../../preparation/real_test_00.avi')
+        # self.cam = cv2.VideoCapture(file_dir + '/../../buff_test_video_01.mpeg')
         self.led_displays_recognizer = LedDisplaysRecognizer()
 
         # Use the right mode:
-        self.handwritten_digit_classifier = HandwrittenDigitClassifier(mode = 'GPU')
-        # self.handwritten_digit_classifier = HandwrittenDigitClassifier(mode = 'CPU')
+        # self.handwritten_digit_classifier = HandwrittenDigitClassifier(mode = 'GPU')
+        self.handwritten_digit_classifier = HandwrittenDigitClassifier(mode = 'CPU')
 
         self.show_image = show_image
         self.crop = crop
@@ -131,6 +133,6 @@ if __name__ == '__main__':
     # rune_recognition = RuneRecognition(show_image = True)
     while True:
         rune_recognition.process()
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1000/24) & 0xFF == ord('q'):
             break
     rune_recognition.close()
